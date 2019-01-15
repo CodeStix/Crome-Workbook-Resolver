@@ -1,0 +1,22 @@
+WorkbookResolver
+
+knooppunt.net
+R img class: "rightimage realImage"
+L img class: "leftimage realImage"
+
+oplossing url voor pagina 100:
+https://cds.knooppunt.net/CMS/CDS/Van%20In/Published%20Content/Geogenie/Geogenie%20-%20GeoNatura%206%20TSO%20-%20KSO%20Leerwerkboek/Resources/580741_Geogenie_GeoNatura_6_LWB_ingevuld.pdf_/100.png
+
+url voor pagina 100:
+https://cds.knooppunt.net/CMS/CDS/Van%20In/Published%20Content/Geogenie/Geogenie%20-%20GeoNatura%206%20TSO%20-%20KSO%20Leerwerkboek/Resources/580741_Geogenie_GeoNatura_6_LWB.pdf_/1.png
+
+
+url voor pagina 40:
+http://cds.knooppunt.net/CMS/CDS/Van%20In/Published%20Content/UDB/Pionier/Pionier%206T%20Leerwerkboek%202014/Resources/Pionier 6T LWB 2014.(2).pdf_/40.png
+
+oplossing url voor pagina 40:
+http://cds.knooppunt.net/CMS/CDS/Van%20In/Published%20Content/UDB/Pionier/Pionier%206T%20Leerwerkboek%202014/Resources/Pionier%206T%20LWB-AZ%202014.pdf_/40.png
+
+knop linkeronderhoek:
+<button unselectable="on" class="TSmenu2 MnuLeft" title="Digibord-modus" data-bind="{event: { pointerdown: ToggleUpDown}}"><span unselectable="on" class="butIcon sbcon sb-toolbarup" data-bind="css: { 'sb-toolbardown': ToolbarDown(), 'sb-toolbarup': !ToolbarDown()}">&nbsp;</span></button>
+
