@@ -17,19 +17,31 @@ window.onload = function()
 		statusText.setAttribute("class","defaultfont");
 		frame.contentWindow.document.getElementById("spanHorL").appendChild(statusText);
 
-		downloadLeaks();
+		downloadLeaks(true);
 
 	}, 5000);
 };
 
-function downloadLeaks()
+function downloadLeaks(useOnline)
 {
 	console.info("Downloading leaks...");
 	statusText.innerText = "Zoeken naar gelekte oplossingen...";
 
+	const url;
+	if (useOnline)
+	{
+		// Use the updated leaks version.
+		const proxyurl = "https://cors.io/?";
+		url = proxyurl + "https://www.dropbox.com/s/jhc84b8nh4s6912/workbookLeaks.json?dl=1";
+	}
+	else
+	{
+		// Get the offline leaks file.
+		url = "chrome-extension://maoidnhjkefpedkamblocnibnflipoca/workbookLeaks.json";
+	}
+
 	// Downloading available workbook leaks.
-	const proxyurl = "https://cors.io/?";
-	fetch(proxyurl + "https://www.dropbox.com/s/jhc84b8nh4s6912/workbookLeaks.json?dl=1").then((resp) => resp.json()).then(function(data) 
+	fetch(url).then((resp) => resp.json()).then(function(data) 
 	{
 		var currentPage = window.location.href;
 
@@ -49,7 +61,10 @@ function downloadLeaks()
 		leakFound();
 	}).catch(function() 
 	{
-    	leakDownloadError();
+		leakDownloadError();
+		
+		if (useOnline)
+			downloadLeaks(false);
 	});
 }
 
@@ -94,6 +109,14 @@ function doSolve(solve)
 
 	var rightImage = frame.contentWindow.document.getElementsByClassName("rightimage realImage")[0];
 	var leftImage = frame.contentWindow.document.getElementsByClassName("leftimage realImage")[0];
+
+	rightImage.parentElement.style.backgroundRepeat = "no-repeat";
+	leftImage.parentElement.style.backgroundRepeat = "no-repeat";
+	rightImage.parentElement.style.backgroundSize = "100% 100%";
+	leftImage.parentElement.style.backgroundSize = "100% 100%";
+	rightImage.parentElement.style.backgroundImage = "url('" + rightImage.src + "')";
+	leftImage.parentElement.style.backgroundImage = "url('" + leftImage.src + "')";
+
 	rightImage.onload = function() 
 	{
 		statusText.innerText = "Voltooid.";
@@ -119,3 +142,6 @@ function doSolve(solve)
 	console.info("newRightURL:" + newRightURL);
 	console.info("newLeftURL:" + newLeftURL);
 }
+
+//https://content.plantyn.com/CMS/CDS/Plantyn/Published%20Content/Scoodle%20eBooks/Nieuwe%20Delta-T%205_6%20Rationale%20functies%20(Scoodle%2011e102fa-c0ae-4e39-b38a-a66d00b3ee86)/Resources/0ddf644e-59d2-4d7e-9cab-2c6ff15962d8.pdf_/55.png
+//https://content.plantyn.com/CMS/CDS/Plantyn/Published%20Content/Scoodle%20eBooks/Nieuwe%20Delta-T%205_6%20Rationale%20functies%20(Scoodle%2011e102fa-c0ae-4e39-b38a-a66d00b3ee86)/Resources/0ddf644e-59d2-4d7e-9cab-2c6ff15962d8.pdf_/55.png
