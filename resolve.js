@@ -93,23 +93,27 @@ window.onload = function()
 				});
 			}
 
+			console.info(leaks);
+
 			// Finding the leak for the current workbook.
 			var currentPage = window.location.href;
 			var findLeak = function(url) 
 			{
-				for(var i = 0; i < leaks.leaks.length; i++)
-				for (var j = 0; j < leaks.leaks[i].ifContains.length; j++)
+				for(var i = 0, ii = leaks.leaks.length; i < ii; i++)
 				{
-					if (url.includes(leaks.leaks[i].ifContains[j]))
+					var leak = leaks.leaks[i];
+
+					for (var j = 0, jj = leak.ifContains.length; j < jj; j++)
 					{
-						var leakFound = leaks.leaks[i];
-						
-						console.info("Leak found type: " + leakFound.type);
-						console.info("Leak found ifContains: " + leakFound.ifContains);
-						console.info("Leak found normalFile: " + leakFound.normalFile);
-						console.info("Leak found solvedFile: " + leakFound.solvedFile);
-						
-						return leakFound;
+						if (url.includes(leak.ifContains[j]))
+						{
+							console.info("Leak found type: " + leak.type);
+							console.info("Leak found ifContains: " + leak.ifContains);
+							console.info("Leak found normalFile: " + leak.normalFile);
+							console.info("Leak found solvedFile: " + leak.solvedFile);
+							
+							return leak;
+						}
 					}
 				}
 
@@ -145,22 +149,6 @@ window.onload = function()
 		}
 	}, 150);
 };
-
-/*function leaksWereDownloaded(wasOnline)
-{
-	if (currentLeak == null)
-	{
-		setStatus("!! Dit boek heeft geen gelekte oplossingen.", false);
-
-		return;
-	}
-
-	setStatus((wasOnline ? "Online" : "Offline") + " oplossingen gevonden, bekijk het oplossings-menu!", true);
-
-	btnSolve.disabled = false;
-	btnNot.disabled = false;
-	btnLineByLine.disabled = false;
-}*/
 
 function setStatus(status, type = null)
 {
@@ -214,73 +202,6 @@ function downloadOnlineLeaks(callback)
 	});
 }
 
-/*function downloadLeaks(useOnline, after) 
-{
-	var url;
-	if (useOnline)
-	{
-		// Use the updated leaks version.
-		const proxyurl = "https://cors.io/?";
-		url = proxyurl + "https://www.dropbox.com/s/psegjugj6wuz32f/leaks.json?dl=1";
-	}
-	else
-	{
-		// Get the offline leaks file.
-		url = chrome.extension.getURL("leaks.json");
-		console.info(url);
-	}
-
-	// Downloading available workbook leaks.
-	fetch(url).then((resp) => resp.json()).then(function(data) 
-	{
-		var currentPage = window.location.href;
-
-		if (useOnline)
-		{
-			chrome.storage.local.set({'workbookLeaks': data}, function() 
-			{
-				console.info("Local leaks were updated!");
-			});
-		}
-
-		var iterate = function() 
-		{
-			for(var i = 0; i < data.leaks.length; i++)
-			for (var j = 0; j < data.leaks[i].ifContains.length; j++)
-			{
-				if (currentPage.includes(data.leaks[i].ifContains[j]))
-				{
-					currentLeak = data.leaks[i];
-					console.info("Leak found type: " + currentLeak.type);
-					console.info("Leak found ifContains: " + currentLeak.ifContains);
-					console.info("Leak found normalFile: " + currentLeak.normalFile);
-					console.info("Leak found solvedFile: " + currentLeak.solvedFile);
-					return;
-				}
-			}
-		}
-
-		iterate();
-		
-		after(true);
-	}
-	).catch(function() 
-	{
-		after(false);
-	});
-}*/
-
-/*function leakDownloadError()
-{
-	setStatus("!! De gelekte oplossingen konden niet worden geladen. Klik om nog eens te proberen.");
-	statusText.onclick = function() 
-	{ 
-		statusText.onclick = null;
-
-		patch();
-	};
-}*/
-
 function downloadAsPDF(callback)
 {
 	if (normalPdfUrl == null || solvedPdfUrl == null)
@@ -288,23 +209,27 @@ function downloadAsPDF(callback)
 		doSolve(false);
 	}
 
-	var pageCount = parseInt(frame.contentWindow.document.querySelectorAll("#divHorBottom #spanHorL span.defaultfont")[0].innerText.substring(4));
+	setStatus("PDF wordt aangemaakt, dit zal enkele minuten duren...", true);
 
-	const downscaleFactor = 2;
+	var pageCount = parseInt(frame.contentWindow.document.querySelectorAll("#divHorBottom #spanHorL span.defaultfont")[0].innerText.substring(4));
+	
+	// Check for transparancy
+	var copyNormalLayer = true;
+	var image = new MarvinImage();
+	image.load(solvedPdfUrl + "/" + Math.floor(pageCount / 2) + ".png", function()
+	{
+		copyNormalLayer = image.getAlphaComponent(50, 50) == 0;
+
+		console.info("Also copy normal layer? " + copyNormalLayer);
+	});
+
+	//const downscaleFactor = 1.75;
 	var doc = new jsPDF('p', 'pt','a4', true);
 	var addPage = function(normal, solved, callback)
 	{
-		urlToBase64Downscale(normal, downscaleFactor, function(base) 
+		var addSolvedLayer = function()
 		{
-			if (base == null)
-			{
-				callback(false);
-				return;
-			}
-
-			doc.addImage(base, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), undefined, 'FAST');
-
-			urlToBase64Downscale(solved, downscaleFactor, function(base2) 
+			urlToBase64(solved, function(base2) 
 			{
 				if (base2 == null)
 				{
@@ -317,7 +242,27 @@ function downloadAsPDF(callback)
 
 				callback(true);
 			});
-		});
+		};
+
+		if (copyNormalLayer)
+		{
+			urlToBase64(normal, function(base) 
+			{
+				if (base == null)
+				{
+					callback(false);
+					return;
+				}
+	
+				doc.addImage(base, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), undefined, 'FAST');
+	
+				addSolvedLayer();
+			});
+		}
+		else
+		{
+			addSolvedLayer();
+		}
 	} 
 
 	var current = 1;
@@ -331,8 +276,7 @@ function downloadAsPDF(callback)
 
 			doc.save(file);
 
-			setStatus("PDF is aangemaakt: " + file);
-			console.info("Created PDF: " + file);
+			setStatus("PDF is aangemaakt, download zal zometeen starten... ", true);
 
 			callback();
 

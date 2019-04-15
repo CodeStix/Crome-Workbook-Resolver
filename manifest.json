@@ -6,7 +6,7 @@
   "content_scripts": [
     {
       "matches": ["https://cds.knooppunt.net/Pages/*", "http://cds.knooppunt.net/Pages/*", "https://content.plantyn.com/Pages/*", "http://content.plantyn.com/Pages/*"],
-      "js": ["resolve.js", "image2base64.js", "jspdf.min.js"]
+      "js": ["resolve.js", "image2base64.js", "jspdf.min.js", "marvinj-0.7.js"]
     }
   ],
   "web_accessible_resources": [

@@ -13,7 +13,7 @@ function urlToBase64(url, callback)
         callback(null);
     });*/
     var img = new Image();
-    img.onload = function () 
+    img.onload = function() 
     {
         downscaleCanvas.width = img.width;
         downscaleCanvas.height = img.height;
@@ -33,7 +33,7 @@ function urlToBase64(url, callback)
 function urlToBase64Downscale(url, downscaleFactor, callback)
 {
     var img = new Image();
-    img.onload = function () 
+    img.onload = function() 
     {
         downscaleCanvas.width = img.width / downscaleFactor;
         downscaleCanvas.height = img.height / downscaleFactor;
