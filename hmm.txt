@@ -24,3 +24,8 @@ knop linkeronderhoek:
 
 
 https://api.knooppunt.net/v1/resources/images/view?iid=29e92371-2c8c-48a1-8130-386ebecab6d4&context=default
+
+dark blue color accent: #307BB3
+light blue color: #E9F1F6
+
+loading gif: https://cds.knooppunt.net/Pages/JavaScript/p5/lib/images/ajax_loader_gray.gif

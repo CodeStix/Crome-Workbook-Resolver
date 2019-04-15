@@ -7,14 +7,93 @@ var btnSolve;
 var btnNot;
 var btnLineByLine;
 var btnShare;
+
+// Popup box
 var popup;
+var popupLoading;
+var popupButton1;
+var popupButton2;
+var popupText;
 
 var normalPdfUrl;
 var solvedPdfUrl;
 
 window.onload = function()
 {
-	console.info("Loading workbook... (1/2)");
+	popup = document.createElement("div");
+	popup.style.position = "fixed";
+	popup.style.display = "none";
+	popup.style.top = "41%";
+	popup.style.bottom = "41%";
+	popup.style.left = "40%";
+	popup.style.right = "40%";
+	popup.style.backgroundColor = "#307BB3";
+	var popupDiv = document.createElement("div");
+	popupDiv.style.position = "absolute";
+	popupDiv.style.top = "6px";
+	popupDiv.style.bottom = "6px";
+	popupDiv.style.left = "6px";
+	popupDiv.style.right = "6px";
+	popupDiv.style.backgroundColor = "#E9F1F6";
+	popupDiv.style.color = "#307BB3";
+	popup.appendChild(popupDiv);
+	popupText = document.createElement("div");
+	popupText.style.fontFamily = "Helvetica, Arial, sans-serif";
+	popupText.style.fontSize = "14px";
+	popupText.style.fontWeight = "bold";
+	popupText.style.fontSize = "120%";
+	popupText.innerText = "Dit is een test.";
+	popupText.style.padding = "10px 65px 20px 10px";
+	popupDiv.appendChild(popupText);
+	popupLoading = document.createElement("img");
+	popupLoading.src = "https://cds.knooppunt.net/Pages/JavaScript/p5/lib/images/ajax_loader_gray.gif";
+	popupLoading.style.position = "absolute";
+	popupLoading.style.display = "block";
+	popupLoading.style.height = "50px";
+	popupLoading.style.right = "10px";
+	popupLoading.style.top = "10px";
+	popupDiv.appendChild(popupLoading);
+	var d3 = document.createElement("div");
+	d3.style.position = "absolute";
+	d3.style.bottom = "0px";
+	d3.style.left = "0px";
+	d3.style.right = "0px";
+	d3.style.height = "30px";
+	d3.style.backgroundColor = "#D9E1E6";
+	popupDiv.appendChild(d3);
+	popupButton1 = document.createElement("button");
+	popupButton1.value = "Okey";
+	popupButton1.style.position = "absolute";
+	popupButton1.style.bottom = "3px";
+	popupButton1.style.top = "3px";
+	popupButton1.style.right = "3px";
+	popupButton1.style.width = "40%";
+	popupButton1.style.backgroundColor = "#408BA3";
+	popupButton1.style.color = "white";
+	popupButton1.innerText = "OK";
+	popupButton1.onclick = function()
+	{
+		popup.style.display = "none";
+	}
+	d3.appendChild(popupButton1);
+	popupButton2 = document.createElement("button");
+	popupButton2.value = "Annuleren";
+	popupButton2.style.position = "absolute";
+	popupButton2.style.bottom = "3px";
+	popupButton2.style.top = "3px";
+	popupButton2.style.left = "3px";
+	popupButton2.style.width = "40%";
+	popupButton2.style.backgroundColor = "#408BA3";
+	popupButton2.style.color = "white";
+	popupButton2.innerText = "Annuleren";
+	popupButton2.onclick = function()
+	{
+		popup.style.display = "none";
+	}
+	d3.appendChild(popupButton2);
+	document.getElementsByTagName("body")[0].appendChild(popup);
+
+	box("Werkboek laden...", null, true, null, null);
 
 	// Load default local leaks file.
 	fetch(chrome.extension.getURL("leaks.json")).then((resp) => resp.json()).then(function(data) 
@@ -40,8 +119,6 @@ window.onload = function()
 
 	var inject = function()
 	{
-		console.info("Injecting... (2/2)");
-
 		statusText = document.createElement("a");
 		statusText.setAttribute("id","leakStatus");
 		statusText.setAttribute("class","defaultfont");
@@ -60,14 +137,24 @@ window.onload = function()
 		btnLineByLine.title = "Download alle oplossingen als een PDF bestand.";
 		btnLineByLine.onclick = function() 
 		{ 
-			btnLineByLine.disabled = true;
-			btnLineByLine.title = "Er wordt al een PDF aangemaakt, dit kan even duren.";
-
-			downloadAsPDF(function() 
+			box("Weet je zeker dat je de oplossingen wilt exporteren als een PDF bestand? Dit kan enkele minuten duren.", function(result) 
 			{
-				btnLineByLine.disabled = false;
-				btnLineByLine.title = "Download alle oplossingen als een PDF bestand.";
-			}); 
+				if (result)
+				{
+					box("PDF aanmaken... Dit zal even duren...", null, true, null);
+
+					btnLineByLine.disabled = true;
+					btnLineByLine.title = "Er wordt al een PDF aangemaakt, dit kan even duren.";
+
+					downloadAsPDF(function() 
+					{
+						box("PDF is aangemaakt, download zal binnen enkele seconden starten...", null, false, null);
+
+						btnLineByLine.disabled = false;
+						btnLineByLine.title = "Download alle oplossingen als een PDF bestand.";
+					});
+				}
+			}, false);
 		}
 
 		btnShare = frame.contentWindow.document.getElementById("btn_shareAnswers");
@@ -79,24 +166,7 @@ window.onload = function()
 			btnShare.disabled = true;
 		}
 
-		popup = document.createElement("div");
-		popup.style.top = "30%";
-		popup.style.bottom = "30%";
-		popup.style.left = "20%";
-		popup.style.right = "20%";
-		popup.style.backgroundColor = "#777788DD";
-		var d = document.createElement("div");
-		d.style.top = "5px";
-		d.style.bottom = "5px";
-		d.style.left = "5px";
-		d.style.right = "5px";
-		d.style.backgroundColor = "#888899";
-		d.innerText = "Dit is een test.";
-		popup.appendChild(d);
-		document.getElementsByTagName("body")[0].appendChild(popup);
-
-		console.info("Downloading leaks...");
-		statusText.innerText = "Zoeken naar gelekte oplossingen...";
+		box("Aan het zoeken naar oplossingen...", null, true, null, null);
 
 		downloadOnlineLeaks(function(onlineLeaks)
 		{
@@ -140,12 +210,12 @@ window.onload = function()
 			currentLeak = findLeak(currentPage);
 			if (currentLeak == null)
 			{
-				setStatus("!! Dit boek heeft geen gelekte oplossingen.", false);
+				box("Jammer genoeg zijn er geen gelekte oplossingen beschikbaar voor dit boek.", null, false, null);
 			}
 			else
 			{
-				setStatus((onlineLeaks != null ? "Online" : "Offline") + " oplossingen gevonden, bekijk het oplossings-menu!", true);
-		
+				box("Er zijn " + (onlineLeaks != null ? "Online" : "Offline") + " oplossingen gevonden, bekijk het oplossings-menu!", null, false, null);
+
 				btnSolve.disabled = false;
 				btnNot.disabled = false;
 				btnLineByLine.disabled = false;
@@ -166,6 +236,33 @@ window.onload = function()
 		}
 	}, 150);
 };
+
+function box(text, callback, loading = false, button2Text = "Annuleren", button1Text = "OK")
+{
+	popup.style.display = "block";
+	popupLoading.style.display = loading ? "block" : "none";
+
+	popupText.innerText = text;
+	popupButton1.innerText = button1Text;
+	popupButton2.innerText = button2Text;
+	popupButton1.style.display = button1Text != null ? "block" : "none";
+	popupButton2.style.display = button2Text != null ? "block" : "none";
+
+	popupButton1.onclick = function()
+	{
+		popup.style.display = "none";
+
+		if (typeof callback != 'undefined' && callback != null)
+			callback(true);
+	};
+	popupButton2.onclick = function()
+	{
+		popup.style.display = "none";
+
+		if (typeof callback != 'undefined' && callback != null)
+			callback(false);
+	};
+}
 
 function setStatus(status, type = null)
 {
@@ -222,11 +319,7 @@ function downloadOnlineLeaks(callback)
 function downloadAsPDF(callback)
 {
 	if (normalPdfUrl == null || solvedPdfUrl == null)
-	{
 		doSolve(false);
-	}
-
-	setStatus("PDF wordt aangemaakt, dit zal enkele minuten duren...", true);
 
 	var pageCount = parseInt(frame.contentWindow.document.querySelectorAll("#divHorBottom #spanHorL span.defaultfont")[0].innerText.substring(4)) - 1;
 	
@@ -297,6 +390,7 @@ function downloadAsPDF(callback)
 	var current = 1;
 	var nextPage = function()
 	{
+		popupText.innerText = "PDF aanmaken... (" + current + "/" + pageCount + ")";
 		setStatus("PDF aanmaken... (" + current + "/" + pageCount + ")");
 
 		if (current > pageCount)
@@ -305,7 +399,7 @@ function downloadAsPDF(callback)
 
 			doc.save(file);
 
-			setStatus("PDF is aangemaakt, download zal zometeen starten... ", true);
+			setStatus("PDF is aangemaakt.", true);
 
 			callback();
 
