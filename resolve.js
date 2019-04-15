@@ -58,7 +58,7 @@ window.onload = function()
 		console.info("Downloading leaks...");
 		statusText.innerText = "Zoeken naar gelekte oplossingen...";
 	
-		downloadLeaks(false, function(ok)
+		downloadLeaks(true, function(ok)
 		{
 			if (!ok)
 			{
@@ -76,7 +76,7 @@ window.onload = function()
 			}
 			else
 			{
-				leaksWereDownloaded(false);
+				leaksWereDownloaded(true);
 			}
 		});
 	}
@@ -99,26 +99,37 @@ function leaksWereDownloaded(wasOnline)
 {
 	if (currentLeak == null)
 	{
-		statusText.innerText = "!! Dit boek heeft geen gelekte oplossingen.";
+		setStatus("!! Dit boek heeft geen gelekte oplossingen.", false);
 
 		return;
 	}
 
-	setStatus((wasOnline ? "Online" : "Offline") + " oplossingen gevonden, bekijk het oplossings-menu!");
+	setStatus((wasOnline ? "Online" : "Offline") + " oplossingen gevonden, bekijk het oplossings-menu!", true);
 
 	btnSolve.disabled = false;
 	btnNot.disabled = false;
 	btnLineByLine.disabled = false;
 }
 
-function setStatus(status)
+function setStatus(status, type = null)
 {
+	const trueColor = 'lime';
+	const falseColor = 'red';
+
 	statusText.innerText = status;
+
+	if (type != null)
+	{
+		repeat(function(i) 
+		{
+			statusText.style.color = i % 2 == 1 ? (type ? trueColor : falseColor) : null;
+		}, 250, 7);
+	}
 }
 
 function repeat(func, interval, times)
 {
-	if (times <= 0)
+	if (times <= 1)
 		return;
 
 	setTimeout(function() 
