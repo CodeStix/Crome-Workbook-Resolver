@@ -32,7 +32,7 @@
             "solvedFile": "NIDT56SH_oplossingen.(2).pdf_"
         },
 		{
-            "type": "Nieuwe Delta-T 5/6 ",
+            "type": "Nieuwe Delta-T 5/6 Integralen van veeltermfuncties",
             "ifContains": ["cpid=556909", "Nieuwe%20Delta-T%20Integralen%20van%20veeltermfuncties"],
             "normalFile": "972a3bf0-a1ca-4eec-8c35-49b30b2ffb4b.pdf_",
             "solvedFile": "ca84097d-6913-4510-aa14-b8cb92d7019d.pdf_"
@@ -42,6 +42,18 @@
             "ifContains": ["cpid=385881", "NCTO50W_22587"],
             "normalFile": "0f5e73be-6fa6-44b7-a49c-d18f8cd61022.pdf_",
             "solvedFile": "bd289f58-05f4-4acb-a10e-9e23694a5dbc.pdf_"
+        },
+		{
+            "type": "Nieuwe Delta-T 4A",
+            "ifContains": ["cpid=288204", "NIDT4ADW_LK"],
+            "normalFile": "b8e0d746-fd15-4e7f-929b-734e002792ce.pdf_",
+            "solvedFile": "931700b3-f276-481a-bc2e-bf3ca4e4c5f5.pdf_"
+        },
+		{
+            "type": "Nieuwe Delta-T 4B",
+            "ifContains": ["cpid=110417", "NIDT4BDW_LK"],
+            "normalFile": "b3f7fd13-ce85-4e72-8930-1c7470773c44.pdf_",
+            "solvedFile": "83dd4066-d559-4acb-b31b-b8068ab97582.pdf_"
         }
 	]
 }
