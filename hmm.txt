@@ -1,4 +1,4 @@
-Knootpunt zonder punt
+Knooppunt zonder punt
 
 knooppunt.net
 R img class: "rightimage realImage"
@@ -20,3 +20,7 @@ http://cds.knooppunt.net/CMS/CDS/Van%20In/Published%20Content/UDB/Pionier/Pionie
 knop linkeronderhoek:
 <button unselectable="on" class="TSmenu2 MnuLeft" title="Digibord-modus" data-bind="{event: { pointerdown: ToggleUpDown}}"><span unselectable="on" class="butIcon sbcon sb-toolbarup" data-bind="css: { 'sb-toolbardown': ToolbarDown(), 'sb-toolbarup': !ToolbarDown()}">&nbsp;</span></button>
 
+
+
+
+https://api.knooppunt.net/v1/resources/images/view?iid=29e92371-2c8c-48a1-8130-386ebecab6d4&context=default

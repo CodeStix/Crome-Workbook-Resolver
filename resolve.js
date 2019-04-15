@@ -7,6 +7,7 @@ var btnSolve;
 var btnNot;
 var btnLineByLine;
 var btnShare;
+var popup;
 
 var normalPdfUrl;
 var solvedPdfUrl;
@@ -77,6 +78,22 @@ window.onload = function()
 
 			btnShare.disabled = true;
 		}
+
+		popup = document.createElement("div");
+		popup.style.top = "30%";
+		popup.style.bottom = "30%";
+		popup.style.left = "20%";
+		popup.style.right = "20%";
+		popup.style.backgroundColor = "#777788DD";
+		var d = document.createElement("div");
+		d.style.top = "5px";
+		d.style.bottom = "5px";
+		d.style.left = "5px";
+		d.style.right = "5px";
+		d.style.backgroundColor = "#888899";
+		d.innerText = "Dit is een test.";
+		popup.appendChild(d);
+		document.getElementsByTagName("body")[0].appendChild(popup);
 
 		console.info("Downloading leaks...");
 		statusText.innerText = "Zoeken naar gelekte oplossingen...";
