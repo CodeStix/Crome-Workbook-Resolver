@@ -2,7 +2,7 @@ const downscaleCanvas = document.createElement("canvas");
 
 function urlToBase64(url, callback) 
 {
-    /*fetch(url).then(res => res.blob()).then(blob =>
+    fetch(url).then(res => res.blob()).then(blob =>
     {
         const reader = new FileReader();
 
@@ -11,8 +11,8 @@ function urlToBase64(url, callback)
     }).catch(function(error) 
     {
         callback(null);
-    });*/
-    var img = new Image();
+    });
+    /*var img = new Image();
     img.onload = function() 
     {
         downscaleCanvas.width = img.width;
@@ -27,7 +27,7 @@ function urlToBase64(url, callback)
     {
         callback(null);
     }
-    img.src = url;
+    img.src = url;*/
 }
 
 function urlToBase64Downscale(url, downscaleFactor, callback)

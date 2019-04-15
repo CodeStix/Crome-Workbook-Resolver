@@ -211,7 +211,7 @@ function downloadAsPDF(callback)
 
 	setStatus("PDF wordt aangemaakt, dit zal enkele minuten duren...", true);
 
-	var pageCount = parseInt(frame.contentWindow.document.querySelectorAll("#divHorBottom #spanHorL span.defaultfont")[0].innerText.substring(4));
+	var pageCount = parseInt(frame.contentWindow.document.querySelectorAll("#divHorBottom #spanHorL span.defaultfont")[0].innerText.substring(4)) - 1;
 	
 	// Check for transparancy
 	var copyNormalLayer = true;
@@ -237,10 +237,17 @@ function downloadAsPDF(callback)
 					return;
 				}
 
-				doc.addImage(base2, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), undefined, 'FAST');
-				//doc.text(20, 20, 'Page');
+				try
+				{
+					doc.addImage(base2, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), undefined, 'FAST');
+					//doc.text(20, 20, 'Page');
 
-				callback(true);
+					callback(true);
+				}
+				catch
+				{
+					callback(false);
+				}
 			});
 		};
 
@@ -253,9 +260,14 @@ function downloadAsPDF(callback)
 					callback(false);
 					return;
 				}
-	
-				doc.addImage(base, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), undefined, 'FAST');
-	
+
+				try
+				{
+					doc.addImage(base, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), undefined, 'FAST');
+				}
+				catch
+				{ }
+
 				addSolvedLayer();
 			});
 		}
