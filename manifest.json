@@ -11,5 +11,8 @@
   ],
   "web_accessible_resources": [
     "leaks.json"
+  ],
+  "permissions": [
+    "storage"
   ]
 }

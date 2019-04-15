@@ -1,3 +1,4 @@
+var leaks;
 var currentLeak;
 
 var frame;
@@ -13,6 +14,28 @@ var solvedPdfUrl;
 window.onload = function()
 {
 	console.info("Loading workbook... (1/2)");
+
+	// Load default local leaks file.
+	fetch(chrome.extension.getURL("leaks.json")).then((resp) => resp.json()).then(function(data) 
+	{
+		leaks = data;
+	}).catch(function(error)
+	{
+		leaks = {
+			leaks: []
+		};
+	});
+
+	// Try to load updated local leaks file.
+	chrome.storage.local.get(['workbookLeaks'], function(data) 
+	{	
+		if (typeof data != 'undefined' && data != null)
+		{
+			console.info("Loaded local leaks from storage.");
+
+			leaks = data;
+		}
+	});
 
 	var inject = function()
 	{
@@ -57,26 +80,54 @@ window.onload = function()
 
 		console.info("Downloading leaks...");
 		statusText.innerText = "Zoeken naar gelekte oplossingen...";
-	
-		downloadLeaks(true, function(ok)
+
+		downloadOnlineLeaks(function(onlineLeaks)
 		{
-			if (!ok)
+			if (onlineLeaks != null)
 			{
-				downloadLeaks(false, function(okOffline)
+				leaks = onlineLeaks;
+				
+				chrome.storage.local.set({'workbookLeaks': onlineLeaks}, function() 
 				{
-					if (!okOffline)
-					{
-						leakDownloadError();
-					}
-					else
-					{
-						leaksWereDownloaded(false);
-					}
+					console.info("Local leaks were updated to newest online leaks!");
 				});
+			}
+
+			// Finding the leak for the current workbook.
+			var currentPage = window.location.href;
+			var findLeak = function(url) 
+			{
+				for(var i = 0; i < leaks.leaks.length; i++)
+				for (var j = 0; j < leaks.leaks[i].ifContains.length; j++)
+				{
+					if (url.includes(leaks.leaks[i].ifContains[j]))
+					{
+						var leakFound = leaks.leaks[i];
+						
+						console.info("Leak found type: " + leakFound.type);
+						console.info("Leak found ifContains: " + leakFound.ifContains);
+						console.info("Leak found normalFile: " + leakFound.normalFile);
+						console.info("Leak found solvedFile: " + leakFound.solvedFile);
+						
+						return leakFound;
+					}
+				}
+
+				return null;
+			}
+	
+			currentLeak = findLeak(currentPage);
+			if (currentLeak == null)
+			{
+				setStatus("!! Dit boek heeft geen gelekte oplossingen.", false);
 			}
 			else
 			{
-				leaksWereDownloaded(true);
+				setStatus((onlineLeaks != null ? "Online" : "Offline") + " oplossingen gevonden, bekijk het oplossings-menu!", true);
+		
+				btnSolve.disabled = false;
+				btnNot.disabled = false;
+				btnLineByLine.disabled = false;
 			}
 		});
 	}
@@ -95,7 +146,7 @@ window.onload = function()
 	}, 150);
 };
 
-function leaksWereDownloaded(wasOnline)
+/*function leaksWereDownloaded(wasOnline)
 {
 	if (currentLeak == null)
 	{
@@ -109,7 +160,7 @@ function leaksWereDownloaded(wasOnline)
 	btnSolve.disabled = false;
 	btnNot.disabled = false;
 	btnLineByLine.disabled = false;
-}
+}*/
 
 function setStatus(status, type = null)
 {
@@ -139,7 +190,31 @@ function repeat(func, interval, times)
 	}, interval);
 }
 
-function downloadLeaks(useOnline, after) 
+function downloadOnlineLeaks(callback)
+{
+	// Use the updated leaks version.
+	const proxyurl = "https://cors.io/?";
+	var url = proxyurl + "https://www.dropbox.com/s/psegjugj6wuz32f/leaks.json?dl=1";
+
+	// Downloading available workbook leaks.
+	fetch(url).then((resp) => resp.json()).then(function(data) 
+	{
+		if (typeof data != 'undefined' && data != null)
+		{
+			callback(data);
+		}
+		else
+		{
+			callback(null);
+		}
+	}
+	).catch(function() 
+	{
+		callback(null);
+	});
+}
+
+/*function downloadLeaks(useOnline, after) 
 {
 	var url;
 	if (useOnline)
@@ -159,6 +234,14 @@ function downloadLeaks(useOnline, after)
 	fetch(url).then((resp) => resp.json()).then(function(data) 
 	{
 		var currentPage = window.location.href;
+
+		if (useOnline)
+		{
+			chrome.storage.local.set({'workbookLeaks': data}, function() 
+			{
+				console.info("Local leaks were updated!");
+			});
+		}
 
 		var iterate = function() 
 		{
@@ -185,9 +268,9 @@ function downloadLeaks(useOnline, after)
 	{
 		after(false);
 	});
-}
+}*/
 
-function leakDownloadError()
+/*function leakDownloadError()
 {
 	setStatus("!! De gelekte oplossingen konden niet worden geladen. Klik om nog eens te proberen.");
 	statusText.onclick = function() 
@@ -196,7 +279,7 @@ function leakDownloadError()
 
 		patch();
 	};
-}
+}*/
 
 function downloadAsPDF(callback)
 {
@@ -207,8 +290,8 @@ function downloadAsPDF(callback)
 
 	var pageCount = parseInt(frame.contentWindow.document.querySelectorAll("#divHorBottom #spanHorL span.defaultfont")[0].innerText.substring(4));
 
-	const downscaleFactor = 2.4;
-	var doc = new jsPDF();
+	const downscaleFactor = 2;
+	var doc = new jsPDF('p', 'pt','a4', true);
 	var addPage = function(normal, solved, callback)
 	{
 		urlToBase64Downscale(normal, downscaleFactor, function(base) 
@@ -219,7 +302,7 @@ function downloadAsPDF(callback)
 				return;
 			}
 
-			doc.addImage(base, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight());
+			doc.addImage(base, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), '', 'FAST');
 
 			urlToBase64Downscale(solved, downscaleFactor, function(base2) 
 			{
@@ -229,7 +312,7 @@ function downloadAsPDF(callback)
 					return;
 				}
 
-				doc.addImage(base2, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight());
+				doc.addImage(base2, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), '', 'FAST');
 				//doc.text(20, 20, 'Page');
 
 				callback(true);
@@ -326,6 +409,9 @@ function doSolve(solve)
 	
 		rightOverlayImage.src = newRightURL;
 		leftOverlayImage.src = newLeftURL;
+
+		console.info(newRightURL);
+		console.info(newLeftURL);
 	}
 	else
 	{
