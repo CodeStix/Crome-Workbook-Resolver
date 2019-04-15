@@ -302,7 +302,7 @@ function downloadAsPDF(callback)
 				return;
 			}
 
-			doc.addImage(base, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), '', 'FAST');
+			doc.addImage(base, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), undefined, 'FAST');
 
 			urlToBase64Downscale(solved, downscaleFactor, function(base2) 
 			{
@@ -312,7 +312,7 @@ function downloadAsPDF(callback)
 					return;
 				}
 
-				doc.addImage(base2, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), '', 'FAST');
+				doc.addImage(base2, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), undefined, 'FAST');
 				//doc.text(20, 20, 'Page');
 
 				callback(true);
