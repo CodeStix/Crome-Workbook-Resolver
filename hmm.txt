@@ -1,4 +1,6 @@
-Knooppunt zonder punt
+# Knooppunt zonder punt
+
+## Knooppunt
 
 knooppunt.net
 R img class: "rightimage realImage"
@@ -29,3 +31,28 @@ dark blue color accent: #307BB3
 light blue color: #E9F1F6
 
 loading gif: https://cds.knooppunt.net/Pages/JavaScript/p5/lib/images/ajax_loader_gray.gif
+
+## Knooppunt/Plantyn
+hmm? ProjectViewModel.js:5803
+hmm? ProjectViewModel.js:5848
+
+1 lijn code in de console voor oplossingen:
+document.getElementById("viewFrame").contentWindow.document.getElementsByClassName("answerrow")[0].style.display = "block"
+
+## Pelckmans
+
+1 lijn code in de console voor oplossingen:
+document.getElementsByClassName("solution-layer")[1].style = "display: block;"
+
+
+## Altijd werkende oplossings code
+var t = window.location.href; 
+if(t.indexOf('content.plantyn.com') >= 0 || t.indexOf('cds.knooppunt.net') >= 0)
+	document.getElementById("viewFrame").contentWindow.document.getElementsByClassName("answerrow")[0].style.display = "block";
+else if (t.indexOf('digiboek.be') >= 0)
+	document.getElementsByClassName("solution-layer")[1].style = "display: block;";
+
+## Minified
+var t=window.location.href;if(t.indexOf('content.plantyn.com')>=0||t.indexOf('cds.knooppunt.net')>=0)
+document.getElementById("viewFrame").contentWindow.document.getElementsByClassName("answerrow")[0].style.display="block";else if(t.indexOf('digiboek.be')>=0)
+document.getElementsByClassName("solution-layer")[1].style="display: block;"

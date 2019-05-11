@@ -12,22 +12,6 @@ function urlToBase64(url, callback)
     {
         callback(null);
     });
-    /*var img = new Image();
-    img.onload = function() 
-    {
-        downscaleCanvas.width = img.width;
-        downscaleCanvas.height = img.height;
-
-        var ctx = downscaleCanvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, downscaleCanvas.width, downscaleCanvas.height);
-
-        callback(downscaleCanvas.toDataURL());
-    }
-    img.onerror = function()
-    {
-        callback(null);
-    }
-    img.src = url;*/
 }
 
 function urlToBase64Downscale(url, downscaleFactor, callback)

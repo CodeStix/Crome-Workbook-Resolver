@@ -1,7 +1,6 @@
-var leaks;
-var currentLeak;
+var platform = null;
 
-var frame;
+// UI
 var statusText;
 var btnSolve;
 var btnNot;
@@ -15,25 +14,30 @@ var popupButton1;
 var popupButton2;
 var popupText;
 
-var normalPdfUrl;
-var solvedPdfUrl;
-
 window.onload = function()
 {
 	popup = document.createElement("div");
 	popup.style.position = "fixed";
 	popup.style.display = "none";
+	/*popup.style.top = "41%";
+	popup.style.bottom = "41%";
+	popup.style.left = "100px";
+	popup.style.right = "100px";*/
+	//popup.style.margin = "50px 50px 50px 50px";
+	
 	popup.style.top = "41%";
 	popup.style.bottom = "41%";
-	popup.style.left = "40%";
-	popup.style.right = "40%";
+	popup.style.left = "600px";
+	popup.style.right = "600px";
 	popup.style.backgroundColor = "#307BB3";
 	var popupDiv = document.createElement("div");
-	popupDiv.style.position = "absolute";
-	popupDiv.style.top = "6px";
+	//popupDiv.style.position = "relative";
+	popupDiv.style.display = "block";
+	popupDiv.style.margin = "6px";
+	/*popupDiv.style.top = "6px";
 	popupDiv.style.bottom = "6px";
 	popupDiv.style.left = "6px";
-	popupDiv.style.right = "6px";
+	popupDiv.style.right = "6px";*/
 	popupDiv.style.backgroundColor = "#E9F1F6";
 	popupDiv.style.color = "#307BB3";
 	popup.appendChild(popupDiv);
@@ -95,45 +99,68 @@ window.onload = function()
 
 	box("Werkboek laden...", null, true, null, null);
 
-	// Load default local leaks file.
-	fetch(chrome.extension.getURL("leaks.json")).then((resp) => resp.json()).then(function(data) 
-	{
-		leaks = data;
-	}).catch(function(error)
-	{
-		leaks = {
-			leaks: []
-		};
-	});
+	if (window.location.href.indexOf("cds.knooppunt.net") >= 0)
+		platform = 'knooppunt';
+	else if (window.location.href.indexOf("content.plantyn.com") >= 0)
+		platform = 'plantyn';
+	else if (window.location.href.indexOf("digiboek.be") >= 0)
+		platform = 'pelckmans';
 
-	// Try to load updated local leaks file.
-	chrome.storage.local.get(['workbookLeaks'], function(data) 
-	{	
-		if (typeof data != 'undefined' && data != null)
+	console.info("KPZP platform: " + platform);
+
+	if (platform == null)
+	{
+		box("Jammer. Er zijn geen oplossingen beschikbaar.", null, false, null);
+		return;
+	}
+
+	// Wait for the iframe to load.
+	/*var f = setInterval(function()
+	{
+		if (frame.contentWindow.document.getElementById("spanHorL") != null)
 		{
-			console.info("Loaded local leaks from storage.");
+			clearInterval(f);
 
-			leaks = data;
+			setTimeout(inject, 1500);
 		}
-	});
+	}, 150);*/
+	setTimeout(createUI, 5000);
+};
 
-	var inject = function()
+function createUI()
+{
+	box("Oplossingen verkrijgen...", null, true, null, null);
+
+	// These functions have to setup every UI component.
+	var ok = false;
+	if (platform == 'knooppunt')
+		ok = initKnooppuntUI();
+	else if (platform == 'plantyn')
+		ok = initPlantynUI();
+	else if (platform == 'pelckmans')
+		ok = initPelckmansUI();
+
+	if (!ok)
 	{
-		statusText = document.createElement("a");
-		statusText.setAttribute("id","leakStatus");
-		statusText.setAttribute("class","defaultfont");
+		box("Jammer! Er zijn geen oplossingen beschikbaar.", null, false, null);
 
-		frame.contentWindow.document.getElementById("spanHorL").appendChild(statusText);
+		return;
+	}
 
-		btnSolve = frame.contentWindow.document.getElementById("btn_pinnedAnswersAll");//document.getElementById("btn_answerMode");
+	if (btnSolve != null)
+	{
 		btnSolve.title = "Alle antwoorden op deze pagina weergeven.";
 		btnSolve.onclick =  function() { doSolve(true); }
+	}
 
-		btnNot = frame.contentWindow.document.getElementById("btn_answersNone");//document.getElementById("btn_answerMode")
+	if (btnNot != null)
+	{
 		btnNot.title = "Alle antwoorden op deze pagina verbergen.";
 		btnNot.onclick = function() { doSolve(false); }
+	}
 
-		btnLineByLine = frame.contentWindow.document.getElementById("btn_pinnedAnswersByLine");;
+	if (btnLineByLine != null)
+	{
 		btnLineByLine.title = "Download alle oplossingen als een PDF bestand.";
 		btnLineByLine.onclick = function() 
 		{ 
@@ -142,100 +169,100 @@ window.onload = function()
 				if (result)
 				{
 					box("PDF aanmaken... Dit zal even duren...", null, true, null);
-
+	
 					btnLineByLine.disabled = true;
 					btnLineByLine.title = "Er wordt al een PDF aangemaakt, dit kan even duren.";
-
+	
 					downloadAsPDF(function() 
 					{
 						box("PDF is aangemaakt, download zal binnen enkele seconden starten...", null, false, null);
-
+	
 						btnLineByLine.disabled = false;
 						btnLineByLine.title = "Download alle oplossingen als een PDF bestand.";
 					});
 				}
 			}, false);
 		}
+	}
 
-		btnShare = frame.contentWindow.document.getElementById("btn_shareAnswers");
+	if (btnShare != null)
+	{
 		btnShare.title = "Ja nee eh.";
 		btnShare.onclick = function() 
 		{  
 			alert("Waar ben jij mee bezig? Druk gewoon op 'alle oplossingen weergeven', waarom zou je een sleutel gebruiken?");
-
+	
 			btnShare.disabled = true;
 		}
-
-		box("Aan het zoeken naar oplossingen...", null, true, null, null);
-
-		downloadOnlineLeaks(function(onlineLeaks)
-		{
-			if (onlineLeaks != null)
-			{
-				leaks = onlineLeaks;
-				
-				chrome.storage.local.set({'workbookLeaks': onlineLeaks}, function() 
-				{
-					console.info("Local leaks were updated to newest online leaks!");
-				});
-			}
-
-			console.info(leaks);
-
-			// Finding the leak for the current workbook.
-			var currentPage = window.location.href;
-			var findLeak = function(url) 
-			{
-				for(var i = 0, ii = leaks.leaks.length; i < ii; i++)
-				{
-					var leak = leaks.leaks[i];
-
-					for (var j = 0, jj = leak.ifContains.length; j < jj; j++)
-					{
-						if (url.includes(leak.ifContains[j]))
-						{
-							console.info("Leak found type: " + leak.type);
-							console.info("Leak found ifContains: " + leak.ifContains);
-							console.info("Leak found normalFile: " + leak.normalFile);
-							console.info("Leak found solvedFile: " + leak.solvedFile);
-							
-							return leak;
-						}
-					}
-				}
-
-				return null;
-			}
 	
-			currentLeak = findLeak(currentPage);
-			if (currentLeak == null)
-			{
-				box("Jammer genoeg zijn er geen gelekte oplossingen beschikbaar voor dit boek.", null, false, null);
-			}
-			else
-			{
-				box("Er zijn " + (onlineLeaks != null ? "Online" : "Offline") + " oplossingen gevonden, bekijk het oplossings-menu!", null, false, null);
-
-				btnSolve.disabled = false;
-				btnNot.disabled = false;
-				btnLineByLine.disabled = false;
-			}
-		});
 	}
 
-	frame = document.getElementById("viewFrame");
+	box("Er zijn oplossingen beschikbaar, bekijk het oplossings-menu!", null, false, null);
 
-	// Wait for the iframe to load.
-	var f = setInterval(function()
+	if (btnSolve != null)
+		btnSolve.disabled = false;
+	if (btnNot != null)
+		btnNot.disabled = false;
+	if (btnLineByLine != null)
+		btnLineByLine.disabled = false;
+}
+
+function initKnooppuntUI()
+{
+	if (document.getElementsByClassName("m-modal").length != 0)
 	{
-		if (frame.contentWindow.document.getElementById("spanHorL") != null)
-		{
-			clearInterval(f);
+		return false;
+	}
 
-			setTimeout(inject, 1500);
-		}
-	}, 150);
-};
+	var frame = document.getElementById("viewFrame");
+
+	statusText = document.createElement("a");
+	statusText.setAttribute("id","leakStatus");
+	statusText.setAttribute("class","defaultfont");
+	frame.contentWindow.document.getElementById("spanHorL").appendChild(statusText);
+	btnSolve = frame.contentWindow.document.getElementById("btn_pinnedAnswersAll");
+	btnNot = frame.contentWindow.document.getElementById("btn_answersNone");
+	btnLineByLine = frame.contentWindow.document.getElementById("btn_pinnedAnswersByLine");
+	btnShare = frame.contentWindow.document.getElementById("btn_shareAnswers");
+
+	return true;
+}
+
+function initPlantynUI()
+{
+	return initKnooppuntUI();
+}
+
+function initPelckmansUI()
+{
+	var parent = document.querySelector("#twrapper .topbar .topwrapper ul.topnav2.magazine");
+	const buttonIcon = "/assets-5/css/min/pelckmans/img/edit-pelckmans.png";
+
+	function btn(text)
+	{
+		var b = document.createElement("li");
+		var c = document.createElement("a");
+		c.href = "javascript:void(0)";
+		var d = document.createElement("div");
+		d.classList.add("topnav2-button");
+		var e = document.createElement("img");
+		e.src = buttonIcon;
+		var f = document.createElement("span");
+		f.classList.add("topnav2-title");
+		f.innerText = text;
+		d.appendChild(e);
+		d.appendChild(f);
+		c.appendChild(d);
+		b.appendChild(c);
+		parent.appendChild(b);
+		return c;
+	}
+
+	btnSolve = btn("Toon oplossingen");
+	btnNot = btn("Verberg oplossingen");
+
+	return true;
+}
 
 function box(text, callback, loading = false, button2Text = "Annuleren", button1Text = "OK")
 {
@@ -269,6 +296,12 @@ function setStatus(status, type = null)
 	const trueColor = 'lime';
 	const falseColor = 'red';
 
+	if (statusText == null)
+	{
+		console.info("KPZP status: " + status);
+		return;
+	}
+
 	statusText.innerText = status;
 
 	if (type != null)
@@ -292,36 +325,20 @@ function repeat(func, interval, times)
 	}, interval);
 }
 
-function downloadOnlineLeaks(callback)
+function getPageCount()
 {
-	// Use the updated leaks version.
-	const proxyurl = "https://cors.io/?";
-	var url = proxyurl + "https://www.dropbox.com/s/psegjugj6wuz32f/leaks.json?dl=1";
-
-	// Downloading available workbook leaks.
-	fetch(url).then((resp) => resp.json()).then(function(data) 
-	{
-		if (typeof data != 'undefined' && data != null)
-		{
-			callback(data);
-		}
-		else
-		{
-			callback(null);
-		}
-	}
-	).catch(function() 
-	{
-		callback(null);
-	});
+	//parseInt(frame.contentWindow.document.querySelectorAll("#divHorBottom #spanHorL span.defaultfont")[0].innerText.substring(4)) - 1;
+	return 10; //TODO
 }
 
 function downloadAsPDF(callback)
 {
-	if (normalPdfUrl == null || solvedPdfUrl == null)
+	//TODO new method.
+
+	/*if (normalPdfUrl == null || solvedPdfUrl == null)
 		doSolve(false);
 
-	var pageCount = parseInt(frame.contentWindow.document.querySelectorAll("#divHorBottom #spanHorL span.defaultfont")[0].innerText.substring(4)) - 1;
+	var pageCount = getPageCount();
 	
 	// Check for transparancy
 	var copyNormalLayer = true;
@@ -419,14 +436,21 @@ function downloadAsPDF(callback)
 		});
 	}
 
-	nextPage();
+	nextPage();*/
 }
 
 function doSolve(solve)
 {
 	setStatus("Laden...");
 
-	var rightImage = frame.contentWindow.document.getElementsByClassName("rightimage realImage")[0];
+	var t = window.location.href; 
+	var s = solve ? "block" : "none";
+	if(platform == 'knooppunt' || platform == 'plantyn')
+		document.getElementById("viewFrame").contentWindow.document.getElementsByClassName("answerrow")[0].style.display = s;
+	else if (platform == 'pelckmans')
+		document.getElementsByClassName("solution-layer")[1].style.display = s;
+
+	/*var rightImage = frame.contentWindow.document.getElementsByClassName("rightimage realImage")[0];
 	var leftImage = frame.contentWindow.document.getElementsByClassName("leftimage realImage")[0];
 
 	if (normalPdfUrl == null || solvedPdfUrl == null)
@@ -486,5 +510,5 @@ function doSolve(solve)
 		leftImage.parentElement.removeChild(leftOverlayImage);
 
 		setStatus("Oplossingen verborgen.");
-	}
+	}*/
 }
