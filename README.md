@@ -4,7 +4,7 @@ Makkelijk gelekte oplossingen weergeven van verschillende schoolboeken op *knoop
 Werkt alleen met Google Chrome, download Chrome [hier](https://www.google.com/chrome/).
 
 ## Hoe installeren?
-1. Download de nieuwste versie via [hier](www.google.com).
+1. Download de nieuwste versie via [hier](https://github.com/CodeStix/Knooppunt-Zonder-Punt/releases).
 2. Vindt het gedownloadde bestand in de verkenner en druk `rechtermuisklik -> Uitpakken...`, pak dit op een locatie uit.
 3. Ga naar je extensies via `chrome://extensions`, kopier dit adres naar de adresbalk.
 4. Zet ontwikkelaarsmodus aan in de rechterbovenhoek.
