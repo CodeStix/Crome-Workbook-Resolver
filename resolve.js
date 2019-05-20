@@ -19,34 +19,27 @@ window.onload = function()
 	popup = document.createElement("div");
 	popup.style.position = "fixed";
 	popup.style.display = "none";
-	/*popup.style.top = "41%";
-	popup.style.bottom = "41%";
-	popup.style.left = "100px";
-	popup.style.right = "100px";*/
-	//popup.style.margin = "50px 50px 50px 50px";
-	
-	popup.style.top = "41%";
-	popup.style.bottom = "41%";
-	popup.style.left = "600px";
-	popup.style.right = "600px";
+	popup.style.zIndex = "1";
+	popup.style.top = "40%";
+	popup.style.bottom = "40%";
+	popup.style.left = "30%";
+	popup.style.right = "30%";
 	popup.style.backgroundColor = "#307BB3";
 	var popupDiv = document.createElement("div");
-	//popupDiv.style.position = "relative";
+	popupDiv.style.position = "absolute";
 	popupDiv.style.display = "block";
-	popupDiv.style.margin = "6px";
-	/*popupDiv.style.top = "6px";
+	popupDiv.style.top = "6px";
 	popupDiv.style.bottom = "6px";
 	popupDiv.style.left = "6px";
-	popupDiv.style.right = "6px";*/
+	popupDiv.style.right = "6px";
 	popupDiv.style.backgroundColor = "#E9F1F6";
 	popupDiv.style.color = "#307BB3";
-	popup.appendChild(popupDiv);
 	popupText = document.createElement("div");
 	popupText.style.fontFamily = "Helvetica, Arial, sans-serif";
-	popupText.style.fontSize = "14px";
 	popupText.style.fontWeight = "bold";
 	popupText.style.fontSize = "120%";
 	popupText.innerText = "Dit is een test.";
+	popupText.top = "8px";
 	popupText.style.padding = "10px 65px 20px 10px";
 	popupDiv.appendChild(popupText);
 	popupLoading = document.createElement("img");
@@ -57,6 +50,14 @@ window.onload = function()
 	popupLoading.style.right = "10px";
 	popupLoading.style.top = "10px";
 	popupDiv.appendChild(popupLoading);
+	var d4 = document.createElement("span");
+	d4.style.position = "absolute";
+	d4.style.top = "2px";
+	d4.style.left = "2px";
+	d4.style.fontSize = "8px";
+	d4.style.color = "#AAAABB";
+	d4.innerText = "Stijn Rogiest © 2019 (reddusted@gmail.com)";
+	popupDiv.appendChild(d4);
 	var d3 = document.createElement("div");
 	d3.style.position = "absolute";
 	d3.style.bottom = "0px";
@@ -95,6 +96,7 @@ window.onload = function()
 		popup.style.display = "none";
 	}
 	d3.appendChild(popupButton2);
+	popup.appendChild(popupDiv);
 	document.getElementsByTagName("body")[0].appendChild(popup);
 
 	box("Werkboek laden...", null, true, null, null);
