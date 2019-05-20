@@ -1,6 +1,7 @@
 # Knooppunt-Zonder-Punt
 
-Makkelijk gelekte oplossingen weergeven van verschillende schoolboeken op *knooppunt.net*, *pelckmans.be* en *scoodle.be*.
+Makkelijk oplossingen weergeven zonder sleutel van verschillende schoolboeken op *knooppunt.net*, *pelckmans.be* en *scoodle.be*.
+Je moet wel je boeken registreren en in bezit hebben voordat je de oplossingen kan bekijken.
 Werkt alleen met Google Chrome, download Chrome [hier](https://www.google.com/chrome/).
 
 ## Hoe installeren?
