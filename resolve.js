@@ -262,6 +262,7 @@ function initPelckmansUI()
 
 	btnSolve = btn("Toon oplossingen");
 	btnNot = btn("Verberg oplossingen");
+	btnLineByLine = btn("Download PDF");
 
 	return true;
 }
@@ -329,30 +330,32 @@ function repeat(func, interval, times)
 
 function getPageCount()
 {
-	//parseInt(frame.contentWindow.document.querySelectorAll("#divHorBottom #spanHorL span.defaultfont")[0].innerText.substring(4)) - 1;
-	return 10; //TODO
+	if (platform == 'knooppunt' || platform == 'plantyn')
+	{
+		var frame = document.getElementById("viewFrame");
+		return parseInt(frame.contentWindow.document.querySelectorAll("#divHorBottom #spanHorL span.defaultfont")[0].innerText.substring(4)) - 1;
+	}
+	else if (platform == 'pelckmans')
+	{
+		var chapters = document.querySelectorAll(".chapters-list li");
+		chapters[chapters.length - 1].querySelector("a").click();
+		return parseInt(document.getElementById("footer-counter").value) - 1;
+	}
 }
 
 function downloadAsPDF(callback)
 {
-	//TODO new method.
-
-	/*if (normalPdfUrl == null || solvedPdfUrl == null)
-		doSolve(false);
-
 	var pageCount = getPageCount();
-	
-	// Check for transparancy
-	var copyNormalLayer = true;
-	var image = new MarvinImage();
-	image.load(solvedPdfUrl + "/" + Math.floor(pageCount / 2) + ".png", function()
+
+	if (platform == 'pelckmans')
 	{
-		copyNormalLayer = image.getAlphaComponent(50, 50) == 0;
+		setTimeout(function()
+		{
+			document.querySelector(".chapters-list li a").click();
+		}, 100);
+	}
 
-		console.info("Also copy normal layer? " + copyNormalLayer);
-	});
-
-	//const downscaleFactor = 1.75;
+	var currentPage = 1;
 	var doc = new jsPDF('p', 'pt','a4', true);
 	var addPage = function(normal, solved, callback)
 	{
@@ -368,7 +371,15 @@ function downloadAsPDF(callback)
 
 				try
 				{
-					doc.addImage(base2, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), undefined, 'FAST');
+					if (platform == 'pelckmans')
+					{
+						doc.addImage(base2, 'PNG', 0 - ((currentPage + 1) % 2) * doc.internal.pageSize.getWidth(), 0, doc.internal.pageSize.getWidth() * 2, doc.internal.pageSize.getHeight(), undefined, 'FAST');
+					}
+					else
+					{
+						doc.addImage(base2, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), undefined, 'FAST');
+					}
+
 					//doc.text(20, 20, 'Page');
 
 					callback(true);
@@ -380,41 +391,40 @@ function downloadAsPDF(callback)
 			});
 		};
 
-		if (copyNormalLayer)
+		urlToBase64(normal, function(base) 
 		{
-			urlToBase64(normal, function(base) 
+			if (base == null)
 			{
-				if (base == null)
-				{
-					callback(false);
-					return;
-				}
+				callback(false);
+				return;
+			}
 
-				try
+			try
+			{
+				if (platform == 'pelckmans')
+				{
+					doc.addImage(base, 'PNG', 0 - ((currentPage + 1) % 2) * doc.internal.pageSize.getWidth(), 0, doc.internal.pageSize.getWidth() * 2, doc.internal.pageSize.getHeight(), undefined, 'FAST');
+				}
+				else
 				{
 					doc.addImage(base, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), undefined, 'FAST');
 				}
-				catch
-				{ }
+			}
+			catch
+			{ }
 
-				addSolvedLayer();
-			});
-		}
-		else
-		{
 			addSolvedLayer();
-		}
+		});
 	} 
 
-	var current = 1;
 	var nextPage = function()
 	{
-		popupText.innerText = "PDF aanmaken... (" + current + "/" + pageCount + ")";
-		setStatus("PDF aanmaken... (" + current + "/" + pageCount + ")");
+		popupText.innerText = "PDF aanmaken... (" + currentPage + "/" + pageCount + ")";
+		setStatus("PDF aanmaken... (" + currentPage + "/" + pageCount + ")");
 
-		if (current > pageCount)
+		if (currentPage > pageCount)
 		{
-			var file = currentLeak.type + "_Oplossingen.pdf";
+			var file = platform + "_Oplossingen.pdf";
 
 			doc.save(file);
 
@@ -425,20 +435,66 @@ function downloadAsPDF(callback)
 			return;
 		}
 
-		var normal = normalPdfUrl + "/" + current + ".png";
-		var solved = solvedPdfUrl + "/" + current + ".png";
+		var normalUrl = null;
+		var solvedUrl = null;
 
-		addPage(normal, solved, function(ok) 
-		{ 
-			doc.addPage();
+		if (platform == 'knooppunt' || platform == 'plantyn')
+		{
+			var frame = document.getElementById("viewFrame");
 
-			current++;
+			var el = frame.contentWindow.document.getElementsByClassName("PageNumberInput")[0];
+			el.value = currentPage;
+			el.dispatchEvent(new Event("change"));
 
-			nextPage();
-		});
+			setTimeout(function() {
+
+				normalUrl = frame.contentWindow.document.getElementById("mainCanvas").getElementsByTagName("img")[currentPage % 2].src;
+				solvedUrl = frame.contentWindow.document.getElementsByClassName("answerrow")[0].getElementsByTagName("img")[currentPage % 2].src;
+
+				console.log("Page: " + currentPage + ", normal: + " + normalUrl + ", solved: " + solvedUrl);
+
+				addPage(normalUrl, solvedUrl, function(ok) 
+				{ 
+					doc.addPage();
+		
+					currentPage++;
+		
+					nextPage();
+				});
+
+			}, 500);
+
+		}
+		else if (platform == 'pelckmans')
+		{
+			setTimeout(function() {
+
+				normalUrl = document.querySelectorAll(".background.i")[1].childNodes[1].src;
+				solvedUrl = getComputedStyle(document.getElementsByClassName("solution-layer")[1].childNodes[1]).backgroundImage;
+				solvedUrl = solvedUrl.substring(5, solvedUrl.length - 2);
+
+				if (currentPage % 2 == 0)
+					document.getElementById("nav-next").click();
+
+				setTimeout(function() {
+	
+					console.log("Page: " + currentPage + ", normal: + " + normalUrl + ", solved: " + solvedUrl);
+	
+					addPage(normalUrl, solvedUrl, function(ok) 
+					{ 
+						doc.addPage();
+			
+						currentPage++;
+			
+						nextPage();
+					});
+	
+				}, 100);
+			}, 250);
+		}
 	}
 
-	nextPage();*/
+	nextPage();
 }
 
 function doSolve(solve)
@@ -451,66 +507,4 @@ function doSolve(solve)
 		document.getElementById("viewFrame").contentWindow.document.getElementsByClassName("answerrow")[0].style.display = s;
 	else if (platform == 'pelckmans')
 		document.getElementsByClassName("solution-layer")[1].style.display = s;
-
-	/*var rightImage = frame.contentWindow.document.getElementsByClassName("rightimage realImage")[0];
-	var leftImage = frame.contentWindow.document.getElementsByClassName("leftimage realImage")[0];
-
-	if (normalPdfUrl == null || solvedPdfUrl == null)
-	{
-		normalPdfUrl = rightImage.src.substring(0, rightImage.src.lastIndexOf('/'));
-		solvedPdfUrl = normalPdfUrl.replace(currentLeak.normalFile, currentLeak.solvedFile);
-
-		console.info("normalPdfUrl: " + normalPdfUrl);
-		console.info("solvedPdfUrl: " + solvedPdfUrl);
-	}
-
-	var rightOverlayImage = frame.contentWindow.document.getElementById("solved_image_right");
-	if (rightOverlayImage == null)
-	{
-		if (!solve)
-			return;
-
-		rightOverlayImage = frame.contentWindow.document.createElement('img');
-		rightOverlayImage.id = "solved_image_right";
-		rightOverlayImage.style.cssText = rightImage.style.cssText;
-		rightImage.parentElement.appendChild(rightOverlayImage);
-	}
-
-	var leftOverlayImage = frame.contentWindow.document.getElementById("solved_image_left");
-	if (leftOverlayImage == null)
-	{
-		if (!solve)
-			return;
-
-		leftOverlayImage = frame.contentWindow.document.createElement('img');
-		leftOverlayImage.id = "solved_image_left";
-		leftOverlayImage.style.cssText = leftImage.style.cssText;
-		leftImage.parentElement.appendChild(leftOverlayImage);
-	}
-
-	if (solve)
-	{
-		var newRightURL = rightImage.src.replace(currentLeak.normalFile, currentLeak.solvedFile);
-		var newLeftURL = leftImage.src.replace(currentLeak.normalFile, currentLeak.solvedFile);
-
-		rightOverlayImage.onload = function() 
-		{
-			setStatus("Oplossingen weegegeven.");
-	
-			rightOverlayImage.onload = null;
-		};
-	
-		rightOverlayImage.src = newRightURL;
-		leftOverlayImage.src = newLeftURL;
-
-		console.info(newRightURL);
-		console.info(newLeftURL);
-	}
-	else
-	{
-		rightImage.parentElement.removeChild(rightOverlayImage);
-		leftImage.parentElement.removeChild(leftOverlayImage);
-
-		setStatus("Oplossingen verborgen.");
-	}*/
 }

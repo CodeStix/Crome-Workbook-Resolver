@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Knooppunt-Zonder-Punt",
   "description": "Makkelijk gelekte oplossingen weergeven van verschillende schoolboeken op knooppunt.net en scoodle.be. ",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "content_scripts": [
     {
       "matches": ["https://cds.knooppunt.net/*", "http://cds.knooppunt.net/*", "https://content.plantyn.com/*", "http://content.plantyn.com/*", "https://oauth.digiboek.be/*", "http://oauth.digiboek.be/*", "https://digiboek.be/*", "http://digiboek.be/*"],
