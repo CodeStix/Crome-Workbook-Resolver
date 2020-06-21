@@ -1,3 +1,5 @@
+### :warning: Deze repo wordt niet onderhouden, gebruik de opvolger, [scoplayer-to-pdf](https://github.com/CodeStix/scoplayer-to-pdf).
+
 # Knooppunt-Zonder-Punt
 
 Makkelijk oplossingen weergeven zonder sleutel van verschillende schoolboeken op *knooppunt.net*, *pelckmans.be* en *scoodle.be*.
